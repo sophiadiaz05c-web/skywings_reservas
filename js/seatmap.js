@@ -15,20 +15,17 @@ const SEAT_LAYOUT = {
   // Rows that have only 4 seats instead of 6
   fourSeatRows: [1, 2],
 
-  // X position (% of image width) for 6-seat rows
-  // Left group (A,B,C): fuselage left side ~18-35%
-  // Right group (D,E,F): fuselage right side ~57-73%
-  xSix: { A: 19, B: 27, C: 35, D: 57, E: 65, F: 73 },
+  // X position (% of .buttons-container width)
+  // Left group (A,B,C): fuselage left side; Right group (D,E,F): fuselage right side
+  xSix:  { A: 19, B: 27, C: 35, D: 57, E: 65.5, F: 73.5 },
 
   // X position for 4-seat rows 1-2 (wider seats, only A C D F)
-  xFour: { A: 22, C: 33, D: 59.5, F: 70 },
+  xFour: { A: 21, C: 31.5, D: 61.5, F: 72 },
 
-  // Y position (% of image height) per row.
-  // Economy (1-9): rows start ~17.5%, step ~4% each.
-  // Turista (10-22): rows start ~54%, step ~3% each.
+  // Y position (% of .buttons-container height)
   getY(row) {
-    if (row <= 2) return 17.5 + (row - 1) * 3.8;
-    if (row <= 9) return 20 + (row - 1) * 3.95;
+    if (row <= 2) return 17 + (row - 1) * 4.9;
+    if (row <= 9) return 20 + (row - 1) * 3.98;
     return 57.5 + (row - 10) * 4;
   }
 };
@@ -84,7 +81,7 @@ function buildSeatMap(flight, occupiedSeats, otherBookingSeats, passenger, curre
         ${onclick ? `onclick="${onclick}"` : ''}
         title="${title}"
         data-seat="${seatId}"
-      ></button>`;
+      >${col}</button>`;
     });
   }
 

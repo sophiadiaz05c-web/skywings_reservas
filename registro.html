@@ -46,6 +46,18 @@
                placeholder="Repite la contraseña" required>
       </div>
 
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label class="form-check">
+          <input type="checkbox" id="regTerms" required>
+          <span>
+            He leído y acepto los
+            <a href="#" onclick="openTerms(event)" style="color:var(--primary-light);font-weight:600;">
+              Términos y Condiciones
+            </a>
+          </span>
+        </label>
+      </div>
+
       <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top:0.5rem;">
         Crear Cuenta
       </button>
@@ -59,14 +71,103 @@
   </div>
 </div>
 
+<!-- Terms and Conditions Modal -->
+<div class="modal-overlay" id="termsModal" style="z-index:200;">
+  <div class="modal" style="max-width:560px;max-height:80vh;display:flex;flex-direction:column;">
+    <div class="modal-header">
+      <h3>✈ Términos y Condiciones — SkyWings</h3>
+      <button class="modal-close" onclick="closeTerms()">✕</button>
+    </div>
+    <div class="modal-body" style="overflow-y:auto;font-size:0.85rem;line-height:1.65;color:var(--gray-700);">
+
+      <p style="margin-bottom:1rem;color:var(--gray-500);font-size:0.78rem;">
+        Última actualización: Mayo 2026
+      </p>
+
+      <h4 style="color:var(--primary);margin-bottom:0.4rem;">1. Reservas y confirmación</h4>
+      <p style="margin-bottom:1rem;">
+        Una reserva se considera confirmada únicamente cuando el sistema emite un código de confirmación.
+        SkyWings se reserva el derecho de cancelar reservas duplicadas o realizadas con datos incorrectos.
+        El pasajero es responsable de verificar que todos los datos ingresados sean correctos antes de confirmar.
+      </p>
+
+      <h4 style="color:var(--primary);margin-bottom:0.4rem;">2. Puntualidad y presentación</h4>
+      <p style="margin-bottom:1rem;">
+        SkyWings no se responsabiliza por vuelos perdidos debido a la llegada tardía del pasajero al aeropuerto.
+        Se recomienda presentarse con al menos 2 horas de anticipación para vuelos nacionales y 3 horas para internacionales.
+        El abordaje cierra 30 minutos antes de la hora de salida programada.
+      </p>
+
+      <h4 style="color:var(--primary);margin-bottom:0.4rem;">3. Cambios, cancelaciones y reembolsos</h4>
+      <p style="margin-bottom:1rem;">
+        Los cambios de asiento están permitidos únicamente mientras el vuelo tenga estado <em>Programado</em>.
+        Una vez que el vuelo pase a estado <em>Abordando</em> o <em>Salido</em>, no se aceptarán modificaciones ni cancelaciones.
+        SkyWings no garantiza reembolsos por cancelaciones iniciadas por el pasajero.
+      </p>
+
+      <h4 style="color:var(--primary);margin-bottom:0.4rem;">4. Eventos de fuerza mayor</h4>
+      <p style="margin-bottom:1rem;">
+        SkyWings no asume responsabilidad por retrasos, cancelaciones o inconvenientes causados por condiciones
+        meteorológicas adversas, restricciones de espacio aéreo, emergencias de seguridad, actos de gobierno
+        u otros eventos fuera de su control razonable.
+      </p>
+
+      <h4 style="color:var(--primary);margin-bottom:0.4rem;">5. Menores de edad</h4>
+      <p style="margin-bottom:1rem;">
+        Los pasajeros menores de 18 años deben viajar acompañados de un adulto responsable que figure
+        en la misma reserva como representante legal. SkyWings no acepta reservas de menores sin representante adulto.
+      </p>
+
+      <h4 style="color:var(--primary);margin-bottom:0.4rem;">6. Salidas de emergencia</h4>
+      <p style="margin-bottom:1rem;">
+        Los asientos ubicados en filas de salida de emergencia están reservados exclusivamente para pasajeros
+        adultos menores de 60 años, sin discapacidades físicas, y en condiciones de asistir en una evacuación.
+        SkyWings podrá reubicar a cualquier pasajero que no cumpla estos requisitos.
+      </p>
+
+      <h4 style="color:var(--primary);margin-bottom:0.4rem;">7. Datos personales</h4>
+      <p style="margin-bottom:1rem;">
+        Los datos ingresados en el sistema (nombre, cédula, correo electrónico) serán utilizados
+        exclusivamente para la gestión de reservas. SkyWings no comparte esta información con terceros
+        sin autorización expresa del pasajero.
+      </p>
+
+      <h4 style="color:var(--primary);margin-bottom:0.4rem;">8. Limitación de responsabilidad</h4>
+      <p>
+        La responsabilidad máxima de SkyWings ante cualquier reclamación derivada de una reserva
+        se limita al valor del trayecto reservado. En ningún caso SkyWings será responsable por
+        daños indirectos, lucro cesante o perjuicios de cualquier naturaleza.
+      </p>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeTerms()">Cerrar</button>
+      <button class="btn btn-primary" onclick="acceptTerms()">✓ Acepto los Términos</button>
+    </div>
+  </div>
+</div>
+
 <script src="js/data.js"></script>
 <script src="js/auth.js"></script>
 <script>
-  // Redirect if already logged in
   (function () {
     const s = Auth.getSession();
     if (s) window.location.href = 'index.html';
   })();
+
+  function openTerms(e) {
+    e.preventDefault();
+    document.getElementById('termsModal').classList.add('open');
+  }
+
+  function closeTerms() {
+    document.getElementById('termsModal').classList.remove('open');
+  }
+
+  function acceptTerms() {
+    document.getElementById('regTerms').checked = true;
+    closeTerms();
+  }
 
   function doRegister(e) {
     e.preventDefault();
@@ -74,10 +175,15 @@
     const email = document.getElementById('regEmail').value;
     const pass  = document.getElementById('regPass').value;
     const pass2 = document.getElementById('regPass2').value;
+    const terms = document.getElementById('regTerms').checked;
     const msgEl = document.getElementById('regMsg');
 
     if (pass !== pass2) {
       msgEl.innerHTML = '<div class="alert alert-danger">Las contraseñas no coinciden.</div>';
+      return;
+    }
+    if (!terms) {
+      msgEl.innerHTML = '<div class="alert alert-danger">Debes aceptar los Términos y Condiciones para registrarte.</div>';
       return;
     }
 
