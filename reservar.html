@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkyWings – Reservar Asiento</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="navbar-brand">
+    <span class="navbar-logo">✈</span>
+    <div>
+      <div class="navbar-name">SkyWings</div>
+      <div class="navbar-tagline">Tu destino, nuestro compromiso</div>
+    </div>
+  </a>
+  <ul class="navbar-nav">
+    <li><a href="index.html">← Volver</a></li>
+    <li><a href="admin.html">Admin</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <!-- Flight summary banner -->
+  <div id="flightBanner" class="alert alert-info mb-3" style="display:none;"></div>
+
+  <!-- Wizard steps indicator -->
+  <div class="wizard-steps">
+    <div class="wizard-step active" id="wstep1">
+      <div class="step-num">1</div>
+      <div class="step-label">Pasajeros</div>
+    </div>
+    <div class="wizard-connector" id="wconn1"></div>
+    <div class="wizard-step" id="wstep2">
+      <div class="step-num">2</div>
+      <div class="step-label">Asientos</div>
+    </div>
+    <div class="wizard-connector" id="wconn2"></div>
+    <div class="wizard-step" id="wstep3">
+      <div class="step-num">3</div>
+      <div class="step-label">Confirmar</div>
+    </div>
+  </div>
+
+  <!-- STEP 1: Passenger registration -->
+  <div id="step1">
+    <div class="grid-2">
+
+      <!-- Add passenger form -->
+      <div class="card">
+        <div class="card-header"><h3>Agregar Pasajero</h3></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Nombre completo *</label>
+              <input type="text" id="p_name" class="form-control" placeholder="Juan Pérez">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cédula / Pasaporte *</label>
+              <input type="text" id="p_id" class="form-control" placeholder="V-12345678">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Edad *</label>
+            <input type="number" id="p_age" class="form-control" placeholder="Años cumplidos" min="0" max="120">
+          </div>
+
+          <div class="form-group">
+            <label class="form-check">
+              <input type="checkbox" id="p_disability">
+              Persona con discapacidad
+            </label>
+          </div>
+
+          <div id="passengerFormMsg"></div>
+
+          <button class="btn btn-secondary btn-full" onclick="addPassenger()">+ Agregar Pasajero</button>
+        </div>
+      </div>
+
+      <!-- Passenger list -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Pasajeros Agregados</h3>
+          <span id="passengerCount" class="tag tag-blue">0 pasajeros</span>
+        </div>
+        <div class="card-body">
+          <div id="passengerList">
+            <div class="empty-state" style="padding:2rem 0;">
+              <p>Agrega al menos un pasajero.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Representative assignment (shown only when minors are present) -->
+    <div id="repSection" style="display:none;" class="card mt-3">
+      <div class="card-header">
+        <h3>⚠ Asignación de Representantes</h3>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-warning mb-2">
+          Se detectaron <strong id="minorCount">0</strong> pasajero(s) menor(es) de edad.
+          Cada menor debe tener un representante adulto asignado en esta misma reserva.
+        </div>
+        <div id="repAssignments"></div>
+      </div>
+    </div>
+
+    <div id="step1Msg" style="margin-top:1rem;"></div>
+
+    <div class="flex justify-end mt-3">
+      <button class="btn btn-primary btn-lg" onclick="goToStep2()">
+        Continuar a Selección de Asientos →
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Seat selection -->
+  <div id="step2" style="display:none;">
+    <div class="seat-map-layout">
+
+      <!-- Plane map -->
+      <div class="seat-map-panel">
+        <div class="seat-legend">
+          <div class="legend-item"><div class="legend-dot available"></div> Disponible</div>
+          <div class="legend-item"><div class="legend-dot selected"></div> Seleccionado</div>
+          <div class="legend-item"><div class="legend-dot occupied"></div> Ocupado</div>
+          <div class="legend-item"><div class="legend-dot exit"></div> Salida emergencia</div>
+          <div class="legend-item"><div class="legend-dot blocked"></div> No disponible</div>
+        </div>
+        <div id="seatMapContainer"></div>
+      </div>
+
+      <!-- Sidebar: who we're seating now -->
+      <div class="seat-map-sidebar">
+        <div class="card mb-2">
+          <div class="card-header"><h3>Seleccionando asiento para:</h3></div>
+          <div class="card-body" id="currentPassengerInfo"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><h3>Todos los pasajeros</h3></div>
+          <div class="card-body">
+            <div class="passenger-list" id="seatProgressList"></div>
+          </div>
+        </div>
+
+        <div class="mt-3" id="step2Nav"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- STEP 3: Confirmation summary -->
+  <div id="step3" style="display:none;">
+    <div class="card">
+      <div class="card-header"><h3>Resumen de la Reserva</h3></div>
+      <div class="card-body">
+        <div id="summaryFlight" class="mb-3"></div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Pasajero</th>
+                <th>Cédula/Pasaporte</th>
+                <th>Edad</th>
+                <th>Condición</th>
+                <th>Asiento</th>
+              </tr>
+            </thead>
+            <tbody id="summaryTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="step3Msg" class="mt-2"></div>
+
+    <div class="flex justify-between mt-3">
+      <button class="btn btn-outline" onclick="goToStep2()">← Volver a Asientos</button>
+      <button class="btn btn-success btn-lg" onclick="confirmReservation()">
+        ✓ Confirmar Reserva
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/seatmap.js"></script>
+<script src="js/reservar.js"></script>
+</body>
+</html>

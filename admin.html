@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkyWings – Panel de Administración</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="navbar-brand">
+    <span class="navbar-logo">✈</span>
+    <div>
+      <div class="navbar-name">SkyWings</div>
+      <div class="navbar-tagline">Tu destino, nuestro compromiso</div>
+    </div>
+  </a>
+  <ul class="navbar-nav">
+    <li><a href="index.html">Portal</a></li>
+    <li><a href="admin.html" class="active">Admin <span class="badge-admin">ADMIN</span></a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <div class="flex justify-between align-center mb-3">
+    <div>
+      <h1 class="page-title">Panel de Administración</h1>
+      <p class="page-subtitle">Gestiona vuelos y visualiza reservas</p>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="loadDemoData()">⚡ Cargar datos de prueba</button>
+  </div>
+
+  <!-- Add flight form -->
+  <div class="card mb-3">
+    <div class="card-header">
+      <h2>➕ Agregar Nuevo Vuelo</h2>
+      <button class="btn btn-sm btn-outline" onclick="toggleForm()">Mostrar / Ocultar</button>
+    </div>
+    <div class="card-body" id="flightFormBody">
+      <form id="flightForm" onsubmit="submitFlight(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Ciudad Origen *</label>
+            <input type="text" id="f_origin" class="form-control" placeholder="Ej. Caracas" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Código IATA Origen *</label>
+            <input type="text" id="f_originCode" class="form-control" placeholder="CCS" maxlength="3" required
+                   style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Ciudad Destino *</label>
+            <input type="text" id="f_dest" class="form-control" placeholder="Ej. Miami" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Código IATA Destino *</label>
+            <input type="text" id="f_destCode" class="form-control" placeholder="MIA" maxlength="3" required
+                   style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+          </div>
+        </div>
+
+        <div class="form-row-3">
+          <div class="form-group">
+            <label class="form-label">Fecha *</label>
+            <input type="date" id="f_date" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Hora de salida *</label>
+            <input type="time" id="f_time" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Aeronave *</label>
+            <input type="text" id="f_aircraft" class="form-control" placeholder="Boeing 737-800" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Filas de Salida de Emergencia</label>
+          <input type="text" id="f_exitRows" class="form-control"
+                 placeholder="Ej. 9, 10  (separadas por coma — default: 9 y 10)"
+                 value="9, 10">
+          <p class="text-muted mt-1">Las filas indicadas quedarán restringidas para menores, adultos mayores y personas con discapacidad.</p>
+        </div>
+
+        <div id="flightFormMsg"></div>
+
+        <div class="flex justify-end gap-2">
+          <button type="button" class="btn btn-outline" onclick="resetForm()">Limpiar</button>
+          <button type="submit" class="btn btn-primary">✈ Registrar Vuelo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Flights table -->
+  <div class="card">
+    <div class="card-header">
+      <h2>✈ Vuelos Registrados</h2>
+      <button class="btn btn-outline btn-sm" onclick="renderFlights()">↻ Actualizar</button>
+    </div>
+    <div id="flightsTableWrapper">
+      <div class="card-body">
+        <div class="empty-state">
+          <div class="empty-icon">✈</div>
+          <p>Cargando vuelos...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal: Ver Reservas de un Vuelo -->
+<div class="modal-overlay" id="reservationsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="reservationsModalTitle">Reservas del Vuelo</h3>
+      <button class="modal-close" onclick="closeReservationsModal()">✕</button>
+    </div>
+    <div class="modal-body" id="reservationsModalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeReservationsModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/seatmap.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

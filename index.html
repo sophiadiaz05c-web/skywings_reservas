@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkyWings – Portal de Reservas</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="navbar-brand">
+    <span class="navbar-logo">✈</span>
+    <div>
+      <div class="navbar-name">SkyWings</div>
+      <div class="navbar-tagline">Tu destino, nuestro compromiso</div>
+    </div>
+  </a>
+  <ul class="navbar-nav">
+    <li><a href="index.html" class="active">Vuelos</a></li>
+    <li><a href="admin.html">Admin</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div class="hero-content">
+    <h1>✈ Encuentra tu vuelo</h1>
+    <p>Reserva tu asiento en segundos. Viaja con comodidad y confianza.</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Vuelos disponibles -->
+  <div class="flex justify-between align-center" style="margin-bottom: 1rem;">
+    <div>
+      <h2 class="page-title">Vuelos Disponibles</h2>
+      <p class="page-subtitle">Vuelos con estado <strong>Programado</strong></p>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="loadFlights()">↻ Actualizar</button>
+  </div>
+
+  <div id="flightsList"></div>
+
+  <hr class="divider">
+
+  <!-- Buscar Reserva -->
+  <h2 class="page-title">Mis Reservas</h2>
+  <p class="page-subtitle">Busca tus reservas por número de cédula o pasaporte</p>
+
+  <div class="search-box mb-3">
+    <div class="form-group">
+      <label class="form-label">Número de cédula / pasaporte</label>
+      <input type="text" id="searchId" class="form-control" placeholder="Ej. V-12345678"
+             onkeydown="if(event.key==='Enter') searchReservations()">
+    </div>
+    <button class="btn btn-primary" onclick="searchReservations()">Buscar</button>
+  </div>
+
+  <div id="reservationResults"></div>
+
+</div>
+
+<!-- Modal: Cambiar Asiento -->
+<div class="modal-overlay" id="changeSeatModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Cambiar Asiento</h3>
+      <button class="modal-close" onclick="closeChangeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="changeSeatInfo" class="alert alert-info mb-2"></div>
+
+      <div class="seat-legend">
+        <div class="legend-item"><div class="legend-dot available"></div> Disponible</div>
+        <div class="legend-item"><div class="legend-dot selected"></div> Tu asiento actual / Seleccionado</div>
+        <div class="legend-item"><div class="legend-dot occupied"></div> Ocupado</div>
+        <div class="legend-item"><div class="legend-dot exit"></div> Salida de emergencia</div>
+        <div class="legend-item"><div class="legend-dot blocked"></div> No disponible</div>
+      </div>
+
+      <div id="changeSeatMap"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeChangeModal()">Cancelar</button>
+      <button class="btn btn-success" id="confirmChangeBtn" disabled onclick="confirmSeatChange()">
+        ✓ Confirmar Cambio
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/seatmap.js"></script>
+<script src="js/index.js"></script>
+</body>
+</html>
