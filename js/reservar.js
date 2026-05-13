@@ -18,6 +18,9 @@ function handleSeatClick(seatId) {
 
 // ── Init ──────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  if (!Auth.requireAuth()) return;
+  Auth.initNavbar();
+
   if (!state.flightId) { window.location.href = 'index.html'; return; }
 
   state.flight = SW.getFlightById(state.flightId);
@@ -40,7 +43,6 @@ function renderFlightBanner() {
     <strong>✈ ${f.originCode} → ${f.destCode}</strong>
     &nbsp;|&nbsp; ${f.origin} → ${f.destination}
     &nbsp;|&nbsp; ${formatDateShort(f.date)} · ${f.time}
-    &nbsp;|&nbsp; ${f.aircraft}
     &nbsp;|&nbsp; <span class="status-badge status-programado" style="padding:2px 8px;">Programado</span>`;
 }
 
@@ -309,7 +311,7 @@ function renderSummary() {
     </div>
     <div style="font-size:0.9rem;color:var(--gray-600);margin-top:4px;">
       ${f.origin} → ${f.destination} &nbsp;|&nbsp;
-      ${formatDate(f.date)} · ${f.time} &nbsp;|&nbsp; ${f.aircraft}
+      ${formatDate(f.date)} · ${f.time}
     </div>`;
 
   const exitRows = state.flight.emergencyExitRows || [9, 10];
@@ -348,8 +350,10 @@ function confirmReservation() {
     return;
   }
 
+  const session = Auth.getSession();
   const reservation = SW.addReservation({
     flightId:   state.flightId,
+    userId:     session ? session.userId : null,
     passengers: state.passengers.map(p => ({ ...p }))
   });
 

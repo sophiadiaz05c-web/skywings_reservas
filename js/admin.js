@@ -7,7 +7,6 @@ function toggleForm() {
 
 function resetForm() {
   document.getElementById('flightForm').reset();
-  document.getElementById('f_exitRows').value = '9, 10';
   document.getElementById('flightFormMsg').innerHTML = '';
 }
 
@@ -21,27 +20,20 @@ function showFormMsg(msg, type = 'success') {
 function submitFlight(e) {
   e.preventDefault();
 
-  const exitRowsRaw = document.getElementById('f_exitRows').value.trim();
-  const exitRows = exitRowsRaw
-    ? exitRowsRaw.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 22)
-    : [9, 10];
-
   const flight = {
-    origin:           document.getElementById('f_origin').value.trim(),
-    originCode:       document.getElementById('f_originCode').value.trim().toUpperCase(),
-    destination:      document.getElementById('f_dest').value.trim(),
-    destCode:         document.getElementById('f_destCode').value.trim().toUpperCase(),
-    date:             document.getElementById('f_date').value,
-    time:             document.getElementById('f_time').value,
-    aircraft:         document.getElementById('f_aircraft').value.trim(),
-    emergencyExitRows: exitRows,
-    status:           'programado'
+    origin:            document.getElementById('f_origin').value.trim(),
+    originCode:        document.getElementById('f_originCode').value.trim().toUpperCase(),
+    destination:       document.getElementById('f_dest').value.trim(),
+    destCode:          document.getElementById('f_destCode').value.trim().toUpperCase(),
+    date:              document.getElementById('f_date').value,
+    time:              document.getElementById('f_time').value,
+    emergencyExitRows: [9, 10],
+    status:            'programado'
   };
 
   SW.addFlight(flight);
   showFormMsg('✓ Vuelo registrado exitosamente.');
   document.getElementById('flightForm').reset();
-  document.getElementById('f_exitRows').value = '9, 10';
   renderFlights();
 }
 
@@ -65,7 +57,6 @@ function renderFlights() {
   const rows = flights.map(f => {
     const totalSeats = (2 * 4) + (20 * 6);
     const occupied   = SW.getOccupiedSeats(f.id).length;
-    const exitLabel  = (f.emergencyExitRows || [9,10]).join(', ');
 
     return `<tr>
       <td>
@@ -74,8 +65,6 @@ function renderFlights() {
       </td>
       <td>${formatDateShort(f.date)}</td>
       <td>${f.time}</td>
-      <td>${f.aircraft}</td>
-      <td>Filas ${exitLabel}</td>
       <td>
         <span class="tag tag-green">${totalSeats - occupied} libres</span><br>
         <span class="tag tag-red" style="margin-top:3px;display:inline-block;">${occupied} ocupados</span>
@@ -103,8 +92,6 @@ function renderFlights() {
             <th>Ruta</th>
             <th>Fecha</th>
             <th>Hora</th>
-            <th>Aeronave</th>
-            <th>Salidas emerg.</th>
             <th>Asientos</th>
             <th>Estado</th>
             <th>Acciones</th>
@@ -187,11 +174,11 @@ function loadDemoData() {
 
   const demos = [
     { origin:'Caracas', originCode:'CCS', destination:'Miami', destCode:'MIA',
-      date:'2026-06-20', time:'08:30', aircraft:'Boeing 737-800', emergencyExitRows:[9,10], status:'programado' },
+      date:'2026-06-20', time:'08:30', emergencyExitRows:[9,10], status:'programado' },
     { origin:'Caracas', originCode:'CCS', destination:'Bogotá', destCode:'BOG',
-      date:'2026-06-21', time:'14:15', aircraft:'Airbus A320', emergencyExitRows:[9,10], status:'programado' },
+      date:'2026-06-21', time:'14:15', emergencyExitRows:[9,10], status:'programado' },
     { origin:'Maracaibo', originCode:'MAR', destination:'Caracas', destCode:'CCS',
-      date:'2026-06-22', time:'07:00', aircraft:'Boeing 737-700', emergencyExitRows:[9,10], status:'abordando' }
+      date:'2026-06-22', time:'07:00', emergencyExitRows:[9,10], status:'abordando' }
   ];
 
   demos.forEach(d => SW.addFlight(d));
@@ -199,4 +186,8 @@ function loadDemoData() {
   alert('✓ Datos de prueba cargados.');
 }
 
-document.addEventListener('DOMContentLoaded', renderFlights);
+document.addEventListener('DOMContentLoaded', () => {
+  if (!Auth.requireAdmin()) return;
+  Auth.initNavbar();
+  renderFlights();
+});

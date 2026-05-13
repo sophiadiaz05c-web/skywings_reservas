@@ -59,10 +59,27 @@ const SW = (() => {
     return getReservations().filter(r => r.passengers.some(p => p.idNumber === idNumber));
   }
 
+  function getReservationsByUser(userId) {
+    return getReservations().filter(r => r.userId === userId);
+  }
+
+  // ── Users ─────────────────────────────────────────────────────────────
+  function getUsers() { return load('sw_users'); }
+
+  function addUser(user) {
+    const list = getUsers();
+    user.id        = generateId();
+    user.createdAt = new Date().toISOString();
+    list.push(user);
+    store('sw_users', list);
+    return user;
+  }
+
   return {
     generateId,
     getFlights, getFlightById, addFlight, updateFlight, removeFlight,
     getReservations, addReservation, updateReservation, removeReservation,
-    getReservationsByFlight, getOccupiedSeats, getReservationsByPassengerId
+    getReservationsByFlight, getOccupiedSeats, getReservationsByPassengerId, getReservationsByUser,
+    getUsers, addUser
   };
 })();

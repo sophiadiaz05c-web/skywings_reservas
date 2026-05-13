@@ -38,7 +38,7 @@ function buildSeatMap(flight, occupiedSeats, otherBookingSeats, passenger, curre
   const restricted = passenger.age < 18 || passenger.age >= 60 || passenger.hasDisability;
 
   let html = `<div class="plane-overlay-container">
-    <img src="img/avion.jpeg" class="plane-img" alt="Mapa del avión SkyWings" draggable="false">
+    <img src="img/avion2.png" class="plane-img" alt="Mapa del avión SkyWings" draggable="false">
     <div class="buttons-container">`;
 
   for (let row = 1; row <= SEAT_LAYOUT.rows; row++) {

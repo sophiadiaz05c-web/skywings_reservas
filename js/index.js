@@ -1,5 +1,6 @@
 // Change-seat modal state
 let chg = { reservationId: null, passengerIdx: null, flight: null, passenger: null, newSeat: null };
+let currentSession = null;
 
 // Called by seatmap.js via onclick
 function handleSeatClick(seatId) {
@@ -20,7 +21,7 @@ function loadFlights() {
       <div class="empty-state">
         <div class="empty-icon">✈</div>
         <p>No hay vuelos programados en este momento.</p>
-        <p class="text-muted mt-1">Consulta con el personal de SkyWings o visita el panel de administración.</p>
+        <p class="text-muted mt-1">Consulta con el personal de SkyWings.</p>
       </div>`;
     return;
   }
@@ -29,7 +30,7 @@ function loadFlights() {
 }
 
 function flightCard(f) {
-  const totalSeats = (2 * 4) + (20 * 6); // rows 1-2: 4 seats, rows 3-22: 6 seats
+  const totalSeats = (2 * 4) + (20 * 6);
   const occupied   = SW.getOccupiedSeats(f.id).length;
   const available  = totalSeats - occupied;
 
@@ -49,7 +50,6 @@ function flightCard(f) {
       <div class="flight-meta">
         <span>📅 <strong>${formatDateShort(f.date)}</strong></span>
         <span>🕐 <strong>${f.time}</strong></span>
-        <span>✈ ${f.aircraft}</span>
       </div>
       <div class="flex justify-between align-center mb-2">
         <div>
@@ -62,28 +62,24 @@ function flightCard(f) {
     </div>`;
 }
 
-// ── Reservation lookup ────────────────────────────────────────────────
+// ── My reservations (account-based) ──────────────────────────────────
 
-function searchReservations() {
-  const idNum     = document.getElementById('searchId').value.trim();
-  const container = document.getElementById('reservationResults');
-
-  if (!idNum) {
-    container.innerHTML = '<div class="alert alert-warning">Ingresa un número de cédula o pasaporte.</div>';
-    return;
-  }
-
-  const reservations = SW.getReservationsByPassengerId(idNum);
+function loadMyReservations() {
+  const container   = document.getElementById('reservationResults');
+  const reservations = SW.getReservationsByUser(currentSession.userId);
 
   if (reservations.length === 0) {
-    container.innerHTML = '<div class="alert alert-info">No se encontraron reservas para ese número de identificación.</div>';
+    container.innerHTML = `
+      <div class="alert alert-info">
+        Aún no tienes reservas. ¡Elige un vuelo arriba y reserva tu asiento!
+      </div>`;
     return;
   }
 
-  container.innerHTML = reservations.map(r => reservationCard(r, idNum)).join('');
+  container.innerHTML = reservations.map(reservationCard).join('');
 }
 
-function reservationCard(r, searchId) {
+function reservationCard(r) {
   const flight = SW.getFlightById(r.flightId);
   if (!flight) return '';
 
@@ -91,24 +87,22 @@ function reservationCard(r, searchId) {
   const statusLabel = { programado: 'Programado', abordando: 'Abordando', salido: 'Salido' }[flight.status];
 
   const rows = r.passengers.map((p, i) => {
-    const isMe  = p.idNumber === searchId;
-    const tags  = [
+    const tags = [
       p.isMinor          ? '<span class="tag tag-amber">Menor</span>' : '',
       p.isRepresentative ? '<span class="tag tag-blue">Representante</span>' : '',
       p.hasDisability    ? '<span class="tag tag-red">Discapacidad</span>' : ''
     ].filter(Boolean).join(' ');
 
-    const actions = canModify && isMe
-      ? `<button class="btn btn-outline btn-sm" onclick="openChangeModal('${r.id}',${i})">Cambiar</button>
-         <button class="btn btn-danger btn-sm" style="margin-left:4px;" onclick="cancelReservation('${r.id}')">Cancelar</button>`
-      : (!canModify ? '<span class="text-muted">No modificable</span>' : '—');
+    const changeBtn = canModify
+      ? `<button class="btn btn-outline btn-sm" onclick="openChangeModal('${r.id}',${i})">Cambiar asiento</button>`
+      : '<span class="text-muted">—</span>';
 
-    return `<tr ${isMe ? 'style="background:#EFF6FF;"' : ''}>
+    return `<tr>
       <td>${p.name} ${tags}</td>
       <td>${p.idNumber}</td>
       <td>${p.age} años</td>
       <td><strong>${p.seat}</strong></td>
-      <td>${actions}</td>
+      <td>${changeBtn}</td>
     </tr>`;
   }).join('');
 
@@ -124,6 +118,9 @@ function reservationCard(r, searchId) {
         <div class="flex gap-1 align-center">
           <span class="status-badge status-${flight.status}">● ${statusLabel}</span>
           <span class="text-muted">Res. #${r.id.toUpperCase().slice(0,6)}</span>
+          ${canModify
+            ? `<button class="btn btn-danger btn-sm" onclick="cancelReservation('${r.id}')">✕ Cancelar</button>`
+            : ''}
         </div>
       </div>
       <div class="card-body">
@@ -137,7 +134,9 @@ function reservationCard(r, searchId) {
             <tbody>${rows}</tbody>
           </table>
         </div>
-        ${!canModify ? '<div class="alert alert-warning mt-2" style="margin-top:1rem;">Este vuelo ya no permite cambios ni cancelaciones.</div>' : ''}
+        ${!canModify
+          ? '<div class="alert alert-warning" style="margin-top:1rem;">Este vuelo ya no permite cambios ni cancelaciones.</div>'
+          : ''}
       </div>
     </div>`;
 }
@@ -160,7 +159,6 @@ function openChangeModal(reservationId, passengerIdx) {
 }
 
 function refreshChangeMap() {
-  // Occupied = all seats on this flight EXCEPT the passenger's current seat
   const occupied = SW.getOccupiedSeats(chg.flight.id).filter(s => s !== chg.passenger.seat);
   document.getElementById('changeSeatMap').innerHTML =
     buildSeatMap(chg.flight, occupied, [], chg.passenger, chg.passenger.seat, chg.newSeat);
@@ -176,7 +174,7 @@ function confirmSeatChange() {
 
   SW.updateReservation(chg.reservationId, { passengers });
   closeChangeModal();
-  searchReservations();
+  loadMyReservations();
   alert(`✓ Asiento cambiado a ${chg.newSeat} exitosamente.`);
 }
 
@@ -192,7 +190,7 @@ function cancelReservation(reservationId) {
   if (!confirm('¿Confirmas cancelar TODA la reserva? Esta acción no se puede deshacer.')) return;
 
   SW.removeReservation(reservationId);
-  searchReservations();
+  loadMyReservations();
   alert('Reserva cancelada exitosamente.');
 }
 
@@ -201,4 +199,12 @@ function closeChangeModal() {
   chg = { reservationId: null, passengerIdx: null, flight: null, passenger: null, newSeat: null };
 }
 
-document.addEventListener('DOMContentLoaded', loadFlights);
+// ── Init ──────────────────────────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded', () => {
+  currentSession = Auth.requireAuth();
+  if (!currentSession) return;
+  Auth.initNavbar();
+  loadFlights();
+  loadMyReservations();
+});

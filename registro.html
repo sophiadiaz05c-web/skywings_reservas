@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkyWings – Registrarse</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="auth-page">
+
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    <div class="auth-logo">
+      <div class="auth-logo-icon">✈</div>
+      <div class="auth-logo-name">SkyWings</div>
+      <div class="auth-logo-sub">Tu destino, nuestro compromiso</div>
+    </div>
+
+    <h2 class="auth-title">Crear Cuenta</h2>
+
+    <div id="regMsg"></div>
+
+    <form onsubmit="doRegister(event)">
+      <div class="form-group">
+        <label class="form-label">Nombre completo</label>
+        <input type="text" id="regName" class="form-control"
+               placeholder="Juan Pérez" required autofocus>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Correo electrónico</label>
+        <input type="email" id="regEmail" class="form-control"
+               placeholder="usuario@correo.com" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <input type="password" id="regPass" class="form-control"
+               placeholder="Mínimo 6 caracteres" required minlength="6">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Confirmar contraseña</label>
+        <input type="password" id="regPass2" class="form-control"
+               placeholder="Repite la contraseña" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top:0.5rem;">
+        Crear Cuenta
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      ¿Ya tienes cuenta?
+      <a href="login.html">Inicia sesión aquí</a>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  // Redirect if already logged in
+  (function () {
+    const s = Auth.getSession();
+    if (s) window.location.href = 'index.html';
+  })();
+
+  function doRegister(e) {
+    e.preventDefault();
+    const name  = document.getElementById('regName').value;
+    const email = document.getElementById('regEmail').value;
+    const pass  = document.getElementById('regPass').value;
+    const pass2 = document.getElementById('regPass2').value;
+    const msgEl = document.getElementById('regMsg');
+
+    if (pass !== pass2) {
+      msgEl.innerHTML = '<div class="alert alert-danger">Las contraseñas no coinciden.</div>';
+      return;
+    }
+
+    const result = Auth.register(name, email, pass);
+    if (result.ok) {
+      window.location.href = 'index.html';
+    } else {
+      msgEl.innerHTML = `<div class="alert alert-danger">${result.msg}</div>`;
+    }
+  }
+</script>
+</body>
+</html>
